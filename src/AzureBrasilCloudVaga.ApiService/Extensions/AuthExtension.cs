@@ -14,8 +14,6 @@ namespace AzureBrasilCloudVaga.ApiService.Extensions
 
             services.AddAuthorization();
 
-
-            // Graph client with client credentials (application permissions)
             services.AddSingleton(sp =>
             {
                 var tenantId = configuration["AzureAd:TenantId"]!;
@@ -23,10 +21,8 @@ namespace AzureBrasilCloudVaga.ApiService.Extensions
                 var clientSecret = configuration["AzureAd:ClientSecret"]!;
 
                 var credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
-                return new GraphServiceClient(credential, new[] { "https://graph.microsoft.com/.default" });
+                return new GraphServiceClient(credential, ["https://graph.microsoft.com/.default"]);
             });
-
-
         }
     }
 }

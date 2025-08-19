@@ -19,7 +19,7 @@ builder.Services.AddProblemDetails();
 builder.Services.AddFusionCache()
 .WithDefaultEntryOptions(new FusionCacheEntryOptions
 {
-    Duration = TimeSpan.FromMinutes(1)
+    Duration = TimeSpan.FromMinutes(5)
 })
 .WithSerializer(new ZiggyCreatures.Caching.Fusion.Serialization.SystemTextJson.FusionCacheSystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions
 {
@@ -59,19 +59,10 @@ if (app.Environment.IsDevelopment())
 
 app.MapGet("/api/groups", async (int pageNumber, int pageSize, [FromServices] ITenantService tenantService) =>
 {
-
-    return await tenantService.GetGroupsAsync(new AzureBrasilCloudVaga.ApiService.Models.Request.TenantGroupRequest { PageNumber = pageNumber, PageSize = pageSize });
-    ;
+    return await tenantService.GetGroupsAsync(new TenantGroupRequest { PageNumber = pageNumber, PageSize = pageSize });
 })
 .WithOpenApi()
 .WithName("groups");
 
 app.MapDefaultEndpoints();
-
-
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

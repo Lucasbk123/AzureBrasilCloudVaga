@@ -42,7 +42,8 @@ namespace AzureBrasilCloudVaga.ApiService.Services
                 req.Headers.Add("ConsistencyLevel", "eventual");
             }));
 
-            if (request.PageSize * request.PageNumber > groupsPage.OdataCount)
+
+            if (currentPage != request.PageSize &&  (request.PageSize * request.PageNumber > groupsPage.OdataCount))
                 return new PagedResponse<TenantGroupResponse>();
 
             while (currentPage < request.PageNumber && groupsPage.OdataNextLink != null)
