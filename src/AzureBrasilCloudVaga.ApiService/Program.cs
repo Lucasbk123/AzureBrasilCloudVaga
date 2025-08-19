@@ -5,13 +5,27 @@ using AzureBrasilCloudVaga.ApiService.Models.Response;
 using AzureBrasilCloudVaga.ApiService.Models.Response.Shared;
 using AzureBrasilCloudVaga.ApiService.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Scalar.AspNetCore;
+using System.Text.Json.Serialization;
+using ZiggyCreatures.Caching.Fusion;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
 builder.Services.AddProblemDetails();
+
+builder.Services.AddFusionCache()
+.WithDefaultEntryOptions(new FusionCacheEntryOptions
+{
+    Duration = TimeSpan.FromMinutes(1)
+})
+.WithSerializer(new ZiggyCreatures.Caching.Fusion.Serialization.SystemTextJson.FusionCacheSystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions
+{
+    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+}))
+.WithDistributedCache(new RedisCache(new RedisCacheOptions() { Configuration = builder.Configuration.GetConnectionString("cache") }));
 
 builder.Services.AddOpenApi();
 
@@ -43,10 +57,10 @@ if (app.Environment.IsDevelopment())
 }
 
 
-app.MapGet("/api/groups", async (string OdataNextLink,int Limit, [FromServices] ITenantService tenantService) =>
+app.MapGet("/api/groups", async (int pageNumber, int pageSize, [FromServices] ITenantService tenantService) =>
 {
 
-    return await tenantService.GetGroupsAsync(new AzureBrasilCloudVaga.ApiService.Models.Request.TenantGroupRequest { Limit = Limit ,OdataNextLink = OdataNextLink});
+    return await tenantService.GetGroupsAsync(new AzureBrasilCloudVaga.ApiService.Models.Request.TenantGroupRequest { PageNumber = pageNumber, PageSize = pageSize });
     ;
 })
 .WithOpenApi()
