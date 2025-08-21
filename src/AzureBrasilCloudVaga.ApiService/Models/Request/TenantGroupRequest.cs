@@ -1,9 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AzureBrasilCloudVaga.ApiService.Models.Request.Shared;
+using Microsoft.AspNetCore.Mvc;
 
 namespace AzureBrasilCloudVaga.ApiService.Models.Request;
 
-public class TenantGroupRequest
+public class TenantGroupRequest : PaginatedBaseRequest
 {
-    public int PageNumber { get; set; }
-    public int PageSize { get; set; }
 }

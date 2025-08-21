@@ -19,11 +19,15 @@ builder.Services.AddProblemDetails();
 builder.Services.AddFusionCache()
 .WithDefaultEntryOptions(new FusionCacheEntryOptions
 {
-    Duration = TimeSpan.FromMinutes(5)
+    Duration = TimeSpan.FromMinutes(60),
+    SkipMemoryCacheRead = true,
+    SkipMemoryCacheWrite = true
+
 })
 .WithSerializer(new ZiggyCreatures.Caching.Fusion.Serialization.SystemTextJson.FusionCacheSystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions
 {
-    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+    PropertyNameCaseInsensitive = true
 }))
 .WithDistributedCache(new RedisCache(new RedisCacheOptions() { Configuration = builder.Configuration.GetConnectionString("cache") }));
 
@@ -57,9 +61,9 @@ if (app.Environment.IsDevelopment())
 }
 
 
-app.MapGet("/api/groups", async (int pageNumber, int pageSize, [FromServices] ITenantService tenantService) =>
+app.MapGet("/api/tenant/groups", async ([AsParameters] TenantGroupRequest request, [FromServices] ITenantService tenantService) =>
 {
-    return await tenantService.GetGroupsAsync(new TenantGroupRequest { PageNumber = pageNumber, PageSize = pageSize });
+    return await tenantService.GetPaginatedGroupsAsync(request);
 })
 .WithOpenApi()
 .WithName("groups");
