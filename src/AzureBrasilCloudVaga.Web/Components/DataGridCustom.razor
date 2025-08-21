@@ -1,0 +1,109 @@
+﻿@typeparam TItem
+@using System.Text.Json
+
+<MudContainer MaxWidth="MaxWidth.False">
+
+
+    <MudCard Class="mb-4">
+        <MudCardContent>
+            <MudGrid AlignItems="Center">
+
+                <MudItem xs="4" md="2">
+                    <MudSelect T="int" Value="@SelectedPageSize" ValueChanged="OnPageSizeChangedInternal"
+                               Label="Registros por página" Variant="Variant.Outlined" Margin="Margin.Dense">
+                        <MudSelectItem Value="1">1</MudSelectItem>
+                        <MudSelectItem Value="2">2</MudSelectItem>
+                        <MudSelectItem Value="5">5</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="8" sm="6" md="10" Class="d-flex justify-end align-center">
+                    <MudText Typo="Typo.body2">
+                        <strong>Total de Registros: </strong>
+                        @if (Response != null)
+                        {
+                            @Response.TotalRecords
+                        }
+                        else
+                        {
+                            @(0)
+                            ;
+                        }
+                    </MudText>
+                </MudItem>
+            </MudGrid>
+        </MudCardContent>
+    </MudCard>
+
+    @if (IsLoading)
+    {
+        <MudProgressCircular Indeterminate="true" Class="d-flex justify-center mt-4" />
+    }
+    else if (Response != null)
+    {
+        <MudTable Items="@Response.Items" RowsPerPage="SelectedPageSize" Hover="true" Striped="true" Bordered="true" Dense="true">
+
+            <ColGroup>
+                @ColGroup
+            </ColGroup>
+            <HeaderContent>
+                @HeaderContent
+            </HeaderContent>
+            <RowTemplate Context="item">
+                @RowTemplate(item)
+            </RowTemplate>
+        </MudTable>
+
+
+        @if (!Response.Items.Any())
+        {
+            <MudAlert Severity="Severity.Info" Class="mt-4">
+                @EmptyMessage
+            </MudAlert>
+        }
+
+
+        <MudContainer Class="d-flex justify-center mt-4">
+            <MudPagination Count="@Response.TotalPages"
+                           Selected="@Response.PageNumber"
+                           SelectedChanged="OnPageChangedInternal"
+                           ShowFirstButton="true"
+                           ShowLastButton="true"
+                           Size="Size.Large" />
+        </MudContainer>
+
+    }
+
+</MudContainer>
+
+@code {
+    [Parameter] public string EmptyMessage { get; set; } = "Nenhum item encontrado.";
+    [Parameter] public bool IsLoading { get; set; } = false;
+    [Parameter] public int SelectedPageSize { get; set; } = 10;
+    [Parameter] public int TotalPage { get; set; } = 10;
+
+    [Parameter] public PaginatedResponse<TItem>? Response { get; set; }
+
+    [Parameter] public RenderFragment? ColGroup { get; set; }
+    [Parameter] public RenderFragment? HeaderContent { get; set; }
+    [Parameter] public RenderFragment<TItem>? RowTemplate { get; set; }
+
+    [Parameter] public EventCallback<int> OnPageChanged { get; set; }
+    [Parameter] public EventCallback<int> OnPageSizeChanged { get; set; }
+
+    private async Task OnPageChangedInternal(int page)
+    {
+        if (Response?.PageNumber != page && OnPageChanged.HasDelegate)
+        {
+            await OnPageChanged.InvokeAsync(page);
+        }
+    }
+
+    private async Task OnPageSizeChangedInternal(int pageSize)
+    {
+        if (OnPageSizeChanged.HasDelegate)
+        {
+            await OnPageSizeChanged.InvokeAsync(pageSize);
+        }
+    }
+}

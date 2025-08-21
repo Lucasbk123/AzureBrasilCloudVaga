@@ -1,0 +1,118 @@
+﻿@page "/grupos"
+
+<MudContainer MaxWidth="MaxWidth.False" Class="pt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">Grupos do Tenant</MudText>
+
+    <DataGridCustom TItem="TenantGroupViewModel"
+              Response="@response"
+              IsLoading="@isLoading"
+              SelectedPageSize="@selectedPageSize"
+              OnPageChanged="OnPageChanged"
+              OnPageSizeChanged="OnPageSizeChanged"
+              EmptyMessage="Nenhum Grupo Encontrador">
+
+        <HeaderContent>
+            <MudTh>ID</MudTh>
+            <MudTh>Nome</MudTh>
+            <MudTh>Descrição</MudTh>
+            <MudTh>Data de Criação</MudTh>
+        </HeaderContent>
+
+        <RowTemplate Context="item">
+            <MudTd DataLabel="ID">
+                <MudText Typo="Typo.caption" Style="font-family: monospace;">
+                    @item.Id
+                </MudText>
+            </MudTd>
+            <MudTd>@item.DisplayName</MudTd>
+            <MudTd>@item.Description</MudTd>
+            <MudTd>@item.CreatedDateTime.ToString("dd/MM/yyyy HH:mm:ss")</MudTd>
+        </RowTemplate>
+    </DataGridCustom>
+
+</MudContainer>
+@code {
+    bool isLoading;
+
+    private int selectedPageSize = 10;
+    private int selectedPageNumber = 1;
+
+    private PaginatedResponse<TenantGroupViewModel> response;
+
+
+    private async Task OnPageChanged(int page)
+    {
+
+        selectedPageNumber = page;
+
+        await LoadGrupoTenantDataAsync();
+
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadGrupoTenantDataAsync();
+    }
+
+    private async Task OnPageSizeChanged(int pageSize)
+    {
+        selectedPageSize = pageSize;
+        selectedPageNumber = 1;
+        await LoadGrupoTenantDataAsync();
+    }
+
+
+    async Task LoadGrupoTenantDataAsync()
+    {
+        isLoading = true;
+        // var http = HttpClientFactory.CreateClient("ServerApi");
+
+        try
+        {
+            // users = await http.GetFromJsonAsync<object>("/api/tenant/users");
+            // me = await http.GetFromJsonAsync<object>("/api/me");
+
+            // response = await http.GetFromJsonAsync<PagedResponse<Item>>("api/tenant/groups", new PaginationRequest
+            // {
+            //     PageNumber = selectedPageNumber,
+            //     PageSize = selectedPageSize
+            // });
+
+            response = new PaginatedResponse<TenantGroupViewModel>
+            {
+                Items = new List<TenantGroupViewModel>
+                {
+                    new("12345640","Lucas Pereira","Testewadasd",DateTime.Now),
+                    new("12345640","Lucas Pereira","Testewadasd",DateTime.Now),
+                    new("12345640","Lucas Pereira","Testewadasd",DateTime.Now),
+                    new("12345640","Lucas Pereira","Testewadasd",DateTime.Now),
+                    new("12345640","Lucas Pereira","Testewadasd",DateTime.Now),
+                    new("12345640","Lucas Pereira","Testewadasd",DateTime.Now),
+                       new("12345640","Lucas Pereira","Testewadasd",DateTime.Now),
+                    new("12345640","Lucas Pereira","Testewadasd",DateTime.Now),
+                    new("12345640","Lucas Pereira","Testewadasd",DateTime.Now),
+                    new("12345640","Lucas Pereira","Testewadasd",DateTime.Now),
+                    new("12345640","Lucas Pereira","Testewadasd",DateTime.Now),
+                    new("12345640","Lucas Pereira","Testewadasd",DateTime.Now)
+                },
+                TotalPages = 4,
+                PageNumber = 1,
+                TotalRecords = 40,
+                PageSize = 10
+            };
+
+
+            //signins = await http.GetFromJsonAsync<object>("/api/tenant/signins");
+        }
+        catch (Exception ex)
+        {
+
+        }
+        finally
+        {
+            isLoading = false;
+        }
+
+
+    }
+
+}

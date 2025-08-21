@@ -11,8 +11,6 @@ var apiService = builder.AddProject<Projects.AzureBrasilCloudVaga_ApiService>("a
 builder.AddProject<Projects.AzureBrasilCloudVaga_Web>("webfrontend")
     .WithExternalHttpEndpoints()
     .WithHttpHealthCheck("/health")
-    .WithReference(cache)
-    .WaitFor(cache)
     .WithReference(apiService)
     .WaitFor(apiService);
 

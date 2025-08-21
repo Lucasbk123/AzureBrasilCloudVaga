@@ -1,0 +1,266 @@
+﻿@page "/login"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+
+<PageTitle>Login - Minha Aplicação</PageTitle>
+
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <h2>Bem-vindo</h2>
+            <p>Faça login para acessar sua conta</p>
+        </div>
+
+        <div class="login-content">
+            <div class="login-form">
+                <div class="microsoft-login">
+                    <button class="btn-microsoft" @onclick="LoginWithMicrosoft">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjEiIGhlaWdodD0iMjEiIHZpZXdCb3g9IjAgMCAyMSAyMSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBmaWxsPSIjRjI1MDIyIi8+CjxyZWN0IHg9IjExIiB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIGZpbGw9IiM3RkJBMDAiLz4KPHJlY3QgeT0iMTEiIHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCIgZmlsbD0iIzAwQThGRiIvPgo8cmVjdCB4PSIxMSIgeT0iMTEiIHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCIgZmlsbD0iI0ZGQjkwMCIvPgo8L3N2Zz4K" alt="Microsoft" />
+                        Entrar com Microsoft
+                    </button>
+                </div>
+
+
+                <RemoteAuthenticatorView Action="@Action">
+                    <LoggingIn>
+                        <div class="auth-status">
+                            <div class="spinner"></div>
+                            <p>Realizando login com Microsoft...</p>
+                        </div>
+                    </LoggingIn>
+                    <LogOut>
+                        <div class="auth-status">
+                            <div class="spinner"></div>
+                            <p>Realizando logout...</p>
+                        </div>
+                    </LogOut>
+                    <LogOutSucceeded>
+                        <div class="auth-status success">
+                            <i class="fas fa-check-circle"></i>
+                            <p>Logout realizado com sucesso!</p>
+                        </div>
+                    </LogOutSucceeded>
+                    <LogOutFailed>
+                        <div class="auth-status error">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <h3>Erro no Logout</h3>
+                            <p>Não foi possível realizar o logout completamente.</p>
+                        </div>
+                    </LogOutFailed>
+                </RemoteAuthenticatorView>
+
+
+                <div class="alternative-actions">
+                    <p>Não tem uma conta Microsoft?</p>
+                    <a href="https://signup.live.com" target="_blank" class="link">
+                        Criar conta Microsoft
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .login-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 20px;
+    }
+
+    .login-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 400px;
+        overflow: hidden;
+    }
+
+    .login-header {
+        padding: 40px 30px 20px;
+        text-align: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+        .login-header h2 {
+            margin: 0 0 10px;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .login-header p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+    .login-content {
+        padding: 30px;
+    }
+
+    .login-form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .btn-microsoft {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        width: 100%;
+        padding: 16px 20px;
+        background: #0078d4;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+        .btn-microsoft:hover {
+            background: #106ebe;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 120, 212, 0.3);
+        }
+
+        .btn-microsoft img {
+            width: 20px;
+            height: 20px;
+        }
+
+    .divider {
+        text-align: center;
+        position: relative;
+        margin: 10px 0;
+    }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e0e0e0;
+        }
+
+        .divider span {
+            background: white;
+            padding: 0 15px;
+            color: #666;
+            font-size: 14px;
+        }
+
+    .alternative-actions {
+        text-align: center;
+    }
+
+        .alternative-actions p {
+            margin: 0 0 10px;
+            color: #666;
+            font-size: 14px;
+        }
+
+    .link {
+        color: #0078d4;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+        .link:hover {
+            text-decoration: underline;
+        }
+
+    .success-message {
+        text-align: center;
+        padding: 20px 0;
+    }
+
+        .success-message i {
+            font-size: 48px;
+            color: #28a745;
+            margin-bottom: 15px;
+        }
+
+        .success-message h3 {
+            margin: 0 0 10px;
+            color: #333;
+            font-size: 24px;
+        }
+
+        .success-message p {
+            margin: 0 0 25px;
+            color: #666;
+            font-size: 16px;
+        }
+
+    .btn {
+        padding: 12px 24px;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin: 5px;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .btn-primary {
+        background: #0078d4;
+        color: white;
+        border: none;
+    }
+
+        .btn-primary:hover {
+            background: #106ebe;
+            transform: translateY(-1px);
+        }
+
+    .btn-outline {
+        background: transparent;
+        color: #0078d4;
+        border: 2px solid #0078d4;
+    }
+
+        .btn-outline:hover {
+            background: #0078d4;
+            color: white;
+        }
+</style>
+
+@code {
+
+    public string? Action { get; set; }
+
+    private async Task LoginWithMicrosoft()
+    {
+        Action = "Login";
+
+
+    }
+
+    private async Task Logout()
+    {
+        Action = "Login";
+    }
+
+    private void NavigateToHome()
+    {
+        Navigation.NavigateTo("/");
+    }
+}

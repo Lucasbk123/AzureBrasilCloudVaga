@@ -1,0 +1,20 @@
+﻿@page "/"
+
+
+<AuthorizeView>
+    <Authorized>
+            <MudContainer MaxWidth="MaxWidth.False" Class="pt-4">
+                <PageTitle>Home</PageTitle>
+
+                <h1>Hello, world!</h1>
+
+                Welcome to your new app.
+
+
+            </MudContainer>
+    </Authorized>
+    <NotAuthorized>
+       <RedirectToLogin></RedirectToLogin>
+    </NotAuthorized>
+</AuthorizeView>
+
