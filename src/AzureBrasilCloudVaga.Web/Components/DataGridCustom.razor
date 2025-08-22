@@ -1,5 +1,6 @@
 ﻿@typeparam TItem
 @using System.Text.Json
+@inject IDialogService DialogService
 
 <MudContainer MaxWidth="MaxWidth.False">
 
@@ -9,7 +10,7 @@
             <MudGrid AlignItems="Center">
 
                 <MudItem xs="4" md="2">
-                    <MudSelect T="int" Value="@SelectedPageSize" ValueChanged="OnPageSizeChangedInternal"
+                    <MudSelect T="int" Value="@selectedPageSize" ValueChanged="OnPageSizeChangedInternal"
                                Label="Registros por página" Variant="Variant.Outlined" Margin="Margin.Dense">
                         <MudSelectItem Value="1">1</MudSelectItem>
                         <MudSelectItem Value="2">2</MudSelectItem>
@@ -37,11 +38,14 @@
 
     @if (IsLoading)
     {
-        <MudProgressCircular Indeterminate="true" Class="d-flex justify-center mt-4" />
+        <div class="d-flex justify-content-center align-items-center" style="height:200px;">
+            <MudProgressCircular Indeterminate="true" />
+        </div>
+
     }
     else if (Response != null)
     {
-        <MudTable Items="@Response.Items" RowsPerPage="SelectedPageSize" Hover="true" Striped="true" Bordered="true" Dense="true">
+        <MudTable Items="@Response.Items" RowsPerPage="selectedPageSize" Hover="true" Striped="true" Bordered="true" Dense="true">
 
             <ColGroup>
                 @ColGroup
@@ -54,14 +58,12 @@
             </RowTemplate>
         </MudTable>
 
-
         @if (!Response.Items.Any())
         {
             <MudAlert Severity="Severity.Info" Class="mt-4">
                 @EmptyMessage
             </MudAlert>
         }
-
 
         <MudContainer Class="d-flex justify-center mt-4">
             <MudPagination Count="@Response.TotalPages"
@@ -74,36 +76,77 @@
 
     }
 
+
+
+
 </MudContainer>
 
 @code {
+
+
     [Parameter] public string EmptyMessage { get; set; } = "Nenhum item encontrado.";
     [Parameter] public bool IsLoading { get; set; } = false;
-    [Parameter] public int SelectedPageSize { get; set; } = 10;
-    [Parameter] public int TotalPage { get; set; } = 10;
-
     [Parameter] public PaginatedResponse<TItem>? Response { get; set; }
 
     [Parameter] public RenderFragment? ColGroup { get; set; }
     [Parameter] public RenderFragment? HeaderContent { get; set; }
     [Parameter] public RenderFragment<TItem>? RowTemplate { get; set; }
 
-    [Parameter] public EventCallback<int> OnPageChanged { get; set; }
-    [Parameter] public EventCallback<int> OnPageSizeChanged { get; set; }
+    [Parameter] public Func<int, int, Task<PaginatedResponse<TItem>?>>? LoadDataAsync { get; set; }
+
+    [Parameter] public EventCallback<bool> IsLoadingChanged { get; set; }
+
+
+    private int selectedPageSize { get; set; } = 10;
+    private int selectedPageNumber { get; set; } = 1;
+
+
+
+    private async Task LoadDataInternalAsync(int pageNumber, int pageSize)
+    {
+        if (LoadDataAsync == null) return;
+
+        try
+        {
+            IsLoading = true;
+
+            Response = await LoadDataAsync(pageNumber, pageSize);
+        }
+        catch (Exception)
+        {
+            var parameters = new DialogParameters
+            {
+                { "OnRetry", EventCallback.Factory.Create(this,() => LoadDataInternalAsync(pageNumber,pageSize)) }
+            };
+
+            await DialogService.ShowAsync<DialogError>(null,parameters);
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (LoadDataAsync != null)
+        {
+            await LoadDataInternalAsync(1, selectedPageSize);
+        }
+    }
 
     private async Task OnPageChangedInternal(int page)
     {
-        if (Response?.PageNumber != page && OnPageChanged.HasDelegate)
-        {
-            await OnPageChanged.InvokeAsync(page);
-        }
+
+        await LoadDataInternalAsync(page, selectedPageSize);
     }
 
     private async Task OnPageSizeChangedInternal(int pageSize)
     {
-        if (OnPageSizeChanged.HasDelegate)
-        {
-            await OnPageSizeChanged.InvokeAsync(pageSize);
-        }
+
+        selectedPageSize = pageSize;
+        selectedPageNumber = 1;
+        await LoadDataInternalAsync(selectedPageNumber, selectedPageSize);
+
     }
 }
