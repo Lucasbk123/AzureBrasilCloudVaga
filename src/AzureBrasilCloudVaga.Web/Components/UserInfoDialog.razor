@@ -1,0 +1,18 @@
+﻿<MudDialog>
+    <DialogContent>
+        <MudText><b>Nome completo:</b> @FullName</MudText>
+        <MudText><b>Tenant ID:</b> @TenantId</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@Close" Color="Color.Primary">Fechar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public string? FullName { get; set; }
+    [Parameter] public string? TenantId { get; set; }
+
+
+    private void Close() => MudDialog.Close();
+}

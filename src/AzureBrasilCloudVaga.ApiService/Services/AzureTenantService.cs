@@ -16,8 +16,6 @@ public class AzureTenantService : ITenantService
 {
     private readonly GraphServiceClient _graphServiceClient;
     private readonly IFusionCache _fusionCache;
-    const string cacheKeyOdataCount = "{0}:OdataCount-PageNumber-{1}-Size-{2}";
-    const string cacheKey = "{0}:PageNumber-{1}-Size-{2}";
 
     public AzureTenantService(GraphServiceClient graphServiceClient, IFusionCache fusionCache)
     {
@@ -26,21 +24,21 @@ public class AzureTenantService : ITenantService
     }
     //TODO: posso salvar o objeto já mapeado para evitar fazer o mapper em toda chamada.
     //Também poderia passa somente OdataNextLink porem o usuario não poderia seleciona a pagina apenas ir para proxima
-    public async Task<PaginatedResponse<TenantGroupResponse>> GetPaginatedGroupsAsync(TenantGroupRequest request)
+    public async Task<PaginatedResponse<GroupResponse>> GetPaginatedGroupsAsync(GroupRequest request)
     {
 
         var cacheKey = request.ToCacheKey("groups:");
         var odataCountCacheKey = request.ToCacheKey("groups:OdataCount:");
 
-        var groupsPageCache = await _fusionCache.TryGetAsync<GroupCollectionResponse>(cacheKey);
+        var groupsCache = await _fusionCache.TryGetAsync<GroupCollectionResponse>(cacheKey);
 
-        if (groupsPageCache.HasValue)
-            return  CreateMapperGroups(groupsPageCache, request, groupsPageCache.Value.OdataCount 
+        if (groupsCache.HasValue)
+            return  CreateMapperGroups(groupsCache, request, groupsCache.Value.OdataCount 
                 ?? await _fusionCache.GetOrDefaultAsync<long>(odataCountCacheKey));
 
         int currentPage = 1;
 
-        var groupsPage = await _fusionCache.GetOrSetAsync(cacheKey.ReplacePageNumber(request.PageNumber,currentPage),
+        var groups = await _fusionCache.GetOrSetAsync(cacheKey.ReplacePageNumber(request.PageNumber,currentPage),
             await _graphServiceClient.Groups.GetAsync(req =>
         {
             req.QueryParameters.Top = request.PageSize;
@@ -50,28 +48,129 @@ public class AzureTenantService : ITenantService
             req.Headers.Add("ConsistencyLevel", "eventual");
         }));
 
-        await _fusionCache.SetAsync(odataCountCacheKey, groupsPage.OdataCount.Value);
+        await _fusionCache.SetAsync(odataCountCacheKey, groups.OdataCount.Value);
 
 
-        if (currentPage != request.PageNumber && (request.PageSize * request.PageNumber > groupsPage.OdataCount))
-            return new PaginatedResponse<TenantGroupResponse>();
+        if (currentPage != request.PageNumber && (request.PageSize * request.PageNumber > groups.OdataCount))
+            return new PaginatedResponse<GroupResponse>();
 
-        while (currentPage < request.PageNumber && groupsPage.OdataNextLink != null)
+        while (currentPage < request.PageNumber && groups.OdataNextLink != null)
         {
             currentPage++;
 
-            groupsPage = await _fusionCache.GetOrSetAsync(cacheKey.ReplacePageNumber(request.PageNumber,currentPage),
-                 await _graphServiceClient.Groups.WithUrl(groupsPage.OdataNextLink).GetAsync());
+            groups = await _fusionCache.GetOrSetAsync(cacheKey.ReplacePageNumber(request.PageNumber,currentPage),
+                 await _graphServiceClient.Groups.WithUrl(groups.OdataNextLink).GetAsync());
         }
 
-        return  CreateMapperGroups(groupsPage, request, groupsPage.OdataCount
+        return  CreateMapperGroups(groups, request, groups.OdataCount
                 ?? await _fusionCache.GetOrDefaultAsync<long>(odataCountCacheKey));
     }
 
-    private PaginatedResponse<TenantGroupResponse> CreateMapperGroups(GroupCollectionResponse groupsPage, TenantGroupRequest request,long OdataCount) =>
+    private PaginatedResponse<GroupResponse> CreateMapperGroups(GroupCollectionResponse groups, GroupRequest request,long OdataCount) =>
         new()
         {
-            Items = groupsPage.Value.Select(x => new TenantGroupResponse(x.Id, x.DisplayName, x.Description, x.CreatedDateTime.Value)),
+            Items = groups.Value.Select(x => new GroupResponse(x.Id, x.DisplayName, x.Description, x.CreatedDateTime.Value)),
+            TotalRecords = OdataCount,
+            PageNumber = request.PageNumber,
+            PageSize = request.PageSize
+        };
+
+    public async Task<PaginatedResponse<UserResponse>> GetPaginatedUsersAsync(UserRequest request)
+    {
+        var cacheKey = request.ToCacheKey("users:");
+        var odataCountCacheKey = request.ToCacheKey("users:OdataCount:");
+
+        var usersCache = await _fusionCache.TryGetAsync<UserCollectionResponse>(cacheKey);
+
+        if (usersCache.HasValue)
+            return CreateMapperUsers(usersCache, request, usersCache.Value.OdataCount
+                ?? await _fusionCache.GetOrDefaultAsync<long>(odataCountCacheKey));
+
+        int currentPage = 1;
+
+        var users = await _fusionCache.GetOrSetAsync(cacheKey.ReplacePageNumber(request.PageNumber, currentPage),
+            await _graphServiceClient.Users.GetAsync(req =>
+            {
+                req.QueryParameters.Top = request.PageSize;
+                req.QueryParameters.Select = ["id", "displayName", "userPrincipalName", "createdDatetime"];
+                req.QueryParameters.Orderby = ["createdDateTime"];
+                req.QueryParameters.Count = true;
+                req.Headers.Add("ConsistencyLevel", "eventual");
+            }));
+
+        await _fusionCache.SetAsync(odataCountCacheKey, users.OdataCount.Value);
+
+
+        if (currentPage != request.PageNumber && (request.PageSize * request.PageNumber > users.OdataCount))
+            return new PaginatedResponse<UserResponse>();
+
+        while (currentPage < request.PageNumber && users.OdataNextLink != null)
+        {
+            currentPage++;
+
+            users = await _fusionCache.GetOrSetAsync(cacheKey.ReplacePageNumber(request.PageNumber, currentPage),
+                 await _graphServiceClient.Users.WithUrl(users.OdataNextLink).GetAsync());
+        }
+
+        return CreateMapperUsers(users, request, users.OdataCount
+                ?? await _fusionCache.GetOrDefaultAsync<long>(odataCountCacheKey));
+    }
+
+    private PaginatedResponse<UserResponse> CreateMapperUsers(UserCollectionResponse users, UserRequest request, long OdataCount) =>
+    new()
+    {
+        Items = users.Value.Select(x => new UserResponse(x.Id, x.DisplayName, x.UserPrincipalName, x.CreatedDateTime.Value)),
+        TotalRecords = OdataCount,
+        PageNumber = request.PageNumber,
+        PageSize = request.PageSize
+    };
+
+
+    public async Task<PaginatedResponse<SigninsResponse>> GetPaginatedSigninsAsync(SignisRequest request)
+    {
+        var cacheKey = request.ToCacheKey("signins:");
+        var odataCountCacheKey = request.ToCacheKey("signins:OdataCount:");
+
+        var signInsCache = await _fusionCache.TryGetAsync<SignInCollectionResponse>(cacheKey);
+
+        if (signInsCache.HasValue)
+            return CreateMapperSignIns(signInsCache, request, signInsCache.Value.OdataCount
+                ?? await _fusionCache.GetOrDefaultAsync<long>(odataCountCacheKey));
+
+        int currentPage = 1;
+
+        var users = await _fusionCache.GetOrSetAsync(cacheKey.ReplacePageNumber(request.PageNumber, currentPage),
+            await _graphServiceClient.AuditLogs.SignIns.GetAsync(req =>
+            {
+                req.QueryParameters.Top = request.PageSize;
+                req.QueryParameters.Orderby = ["createdDateTime desc"];
+                req.QueryParameters.Select = ["id", "userDisplayName", "userPrincipalName", "ipAddress", "createdDateTime"];
+                req.QueryParameters.Count = true;
+                req.Headers.Add("ConsistencyLevel", "eventual");
+            }));
+
+        await _fusionCache.SetAsync(odataCountCacheKey, users.OdataCount.Value);
+
+
+        if (currentPage != request.PageNumber && (request.PageSize * request.PageNumber > users.OdataCount))
+            return new PaginatedResponse<SigninsResponse>();
+
+        while (currentPage < request.PageNumber && users.OdataNextLink != null)
+        {
+            currentPage++;
+
+            users = await _fusionCache.GetOrSetAsync(cacheKey.ReplacePageNumber(request.PageNumber, currentPage),
+                 await _graphServiceClient.AuditLogs.SignIns.WithUrl(users.OdataNextLink).GetAsync());
+        }
+
+        return CreateMapperSignIns(users, request, users.OdataCount
+                ?? await _fusionCache.GetOrDefaultAsync<long>(odataCountCacheKey));
+    }
+
+    private PaginatedResponse<SigninsResponse> CreateMapperSignIns(SignInCollectionResponse signIns, SignisRequest request, long OdataCount) =>
+        new()
+        {
+            Items = signIns.Value.Select(x => new SigninsResponse(x.Id, x.UserDisplayName, x.UserPrincipalName,x.IpAddress, x.CreatedDateTime.Value)),
             TotalRecords = OdataCount,
             PageNumber = request.PageNumber,
             PageSize = request.PageSize

@@ -1,9 +1,7 @@
 using AzureBrasilCloudVaga.ApiService.Extensions;
 using AzureBrasilCloudVaga.ApiService.Interfaces;
+using AzureBrasilCloudVaga.ApiService.Middleware;
 using AzureBrasilCloudVaga.ApiService.Models.Request;
-using AzureBrasilCloudVaga.ApiService.Models.Response;
-using AzureBrasilCloudVaga.ApiService.Models.Response.Shared;
-using AzureBrasilCloudVaga.ApiService.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Scalar.AspNetCore;
@@ -33,7 +31,6 @@ builder.Services.AddFusionCache()
 
 builder.Services.AddOpenApi();
 
-builder.Services.AddScoped<ITenantService, AzureTenantService>();
 
 
 builder.Services.AddAzureAuthentication(builder.Configuration);
@@ -48,8 +45,7 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-
-app.UseExceptionHandler();
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -61,12 +57,39 @@ if (app.Environment.IsDevelopment())
 }
 
 
-app.MapGet("/api/tenant/groups", async ([AsParameters] TenantGroupRequest request, [FromServices] ITenantService tenantService) =>
+app.MapGet("/api/tenant/groups", async (
+    [AsParameters] GroupRequest request,
+    [FromServices] ITenantService tenantService) =>
 {
     return await tenantService.GetPaginatedGroupsAsync(request);
 })
 .WithOpenApi()
-.WithName("groups");
+.WithName("groups")
+.RequireAuthorization();
+
+
+app.MapGet("/api/tenant/signins", async (
+    [AsParameters] SignisRequest request,
+    [FromServices] ITenantService tenantService) =>
+{
+    return Results.Ok(await tenantService.GetPaginatedSigninsAsync(request));
+})
+.WithOpenApi()
+.WithName("signins")
+.RequireAuthorization();
+
+
+
+app.MapGet("/api/tenant/users", async (
+    [AsParameters] UserRequest request,
+    [FromServices] ITenantService tenantService) =>
+{
+    return await tenantService.GetPaginatedUsersAsync(request);
+})
+.WithOpenApi()
+.WithName("users")
+.RequireAuthorization();
+
 
 app.MapDefaultEndpoints();
 app.Run();

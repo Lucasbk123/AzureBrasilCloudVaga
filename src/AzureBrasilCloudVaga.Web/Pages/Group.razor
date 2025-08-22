@@ -1,12 +1,13 @@
 ﻿@page "/grupos"
 @inject IHttpClientFactory HttpClientFactory
 
+@*TODO: Poderia adicionar policy e roles, se necessário*@
+<AuthorizeViewCustom>
 <MudContainer MaxWidth="MaxWidth.False" Class="pt-4">
     <MudText Typo="Typo.h4" Class="mb-4">Grupos do Tenant</MudText>
 
     <DataGridCustom TItem="TenantGroupResponse"
                     Response="@response"
-                    IsLoading="@isLoading"
                     LoadDataAsync="LoadGrupoTenantDataAsync"
                     EmptyMessage="Nenhum Grupo Encontrador">
 
@@ -29,24 +30,16 @@
         </RowTemplate>
     </DataGridCustom>
 </MudContainer>
+</AuthorizeViewCustom>
 @code {
-    bool isLoading = true;
-
-    private int selectedPageSize = 10;
-    private int selectedPageNumber = 1;
 
     private PaginatedResponse<TenantGroupResponse> response;
-
 
     public async Task<PaginatedResponse<TenantGroupResponse>> LoadGrupoTenantDataAsync(int pageNumber, int pageSize)
     {
         var client = HttpClientFactory.CreateClient("ServerApi");
 
-        // users = await http.GetFromJsonAsync<object>("/api/tenant/users");
-        // me = await http.GetFromJsonAsync<object>("/api/me");
-        //signins = await http.GetFromJsonAsync<object>("/api/tenant/signins");
-
-        return await client.GetFromJsonAsync<PaginatedResponse<TenantGroupResponse>>("api/tenant/groups".SetQueryParams(new PaginatedRequest
+        return await client.GetOrFailAsync<PaginatedResponse<TenantGroupResponse>>("api/tenant/groups".SetQueryParams(new PaginatedRequest
         {
             PageNumber = pageNumber,
             PageSize = pageSize

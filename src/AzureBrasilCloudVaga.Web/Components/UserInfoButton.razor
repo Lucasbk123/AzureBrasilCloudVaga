@@ -1,0 +1,35 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthStateProvider
+@inject IDialogService DialogService
+
+<MudIconButton OnClick="@ShowUserInfo" Icon="@Icons.Material.Filled.AccountCircle" Color="Color.Inherit" />
+
+@code {
+    private string? fullName;
+    private string? tenantId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated ?? false)
+        {
+            fullName = user.FindFirst(c => c.Type == "name")?.Value ?? user.Identity.Name;
+            tenantId = user.FindFirst(c => c.Type == "tid")?.Value;
+        }
+    }
+
+    private async Task ShowUserInfo()
+    {
+        var parameters = new DialogParameters
+        {
+            ["FullName"] = fullName,
+            ["TenantId"] = tenantId
+        };
+
+        var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall };
+
+        await DialogService.ShowAsync<UserInfoDialog>("Informações do Usuário", parameters, options);
+    }
+}

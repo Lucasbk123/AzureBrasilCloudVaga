@@ -5,12 +5,6 @@ namespace AzureBrasilCloudVaga.ApiService.Extensions
 {
     public static class StringExtension
     {
-        public static string ToPaginationCacheKey(this string value, int pageNumber, int pageSize)
-            => string.Format(value, pageNumber, pageSize);
-
-        public static string ToPaginationCacheKey(this string value, string endpoint, int pageNumber, int pageSize) 
-            => string.Format(value, endpoint, pageNumber, pageSize);
-
         public static string ToCacheKey(this object obj,string key, string separator = "-")
         {
             if (obj == null)

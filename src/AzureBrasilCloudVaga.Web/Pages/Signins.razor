@@ -1,0 +1,56 @@
+﻿@page "/logins-logs"
+
+@inject IHttpClientFactory HttpClientFactory
+
+
+@*TODO: Poderia adicionar policy e roles, se necessário*@
+<AuthorizeViewCustom>
+    <MudContainer MaxWidth="MaxWidth.False" Class="pt-4">
+        <MudText Typo="Typo.h4" Class="mb-4">Logs de Acesso</MudText>
+
+        <DataGridCustom TItem="SigninsResponse"
+                        Response="@response"
+                        LoadDataAsync="LoadSigninsAsync"
+                        EmptyMessage="Nenhum Log encontrado">
+
+            <HeaderContent>
+                <MudTh>ID</MudTh>
+                <MudTh>Nome</MudTh>
+                <MudTh>Nome Principal</MudTh>
+                <MudTh>IP</MudTh>
+                <MudTh>Data de Criação</MudTh>
+            </HeaderContent>
+
+            <RowTemplate Context="item">
+                <MudTd DataLabel="ID">
+                    <MudText Typo="Typo.caption" Style="font-family: monospace;">
+                        @item.Id
+                    </MudText>
+                </MudTd>
+                <MudTd>@item.DisplayName</MudTd>
+                <MudTd>@item.PrincipalName</MudTd>
+                <MudTd>@item.IpAddress</MudTd>
+                <MudTd>@item.CreatedDateTime.ToString("dd/MM/yyyy HH:mm:ss")</MudTd>
+            </RowTemplate>
+        </DataGridCustom>
+    </MudContainer>
+</AuthorizeViewCustom>
+
+
+@code {
+
+    private PaginatedResponse<SigninsResponse> response;
+
+    public async Task<PaginatedResponse<SigninsResponse>> LoadSigninsAsync(int pageNumber, int pageSize)
+    {
+        var client = HttpClientFactory.CreateClient("ServerApi");
+
+        return await client.GetOrFailAsync<PaginatedResponse<SigninsResponse>>("api/tenant/signins".SetQueryParams(new PaginatedRequest
+        {
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        }));
+
+    }
+
+}

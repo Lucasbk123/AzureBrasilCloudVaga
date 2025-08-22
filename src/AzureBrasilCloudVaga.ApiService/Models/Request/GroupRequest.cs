@@ -3,6 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AzureBrasilCloudVaga.ApiService.Models.Request;
 
-public class TenantGroupRequest : PaginatedBaseRequest
+public class GroupRequest : PaginatedBaseRequest
 {
 }

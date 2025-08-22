@@ -1,0 +1,12 @@
+﻿@inherits ComponentBase
+@page "/authentication/login-callback"
+
+@code {
+
+    [Inject] NavigationManager Nav { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        Nav.NavigateTo("/", forceLoad: true);
+    }
+}

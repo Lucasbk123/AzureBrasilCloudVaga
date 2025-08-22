@@ -15,18 +15,16 @@
         <MudLayout>
             <MudAppBar>
                 <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@ToggleDrawer" />
-                My Application
+                Azure Brasil
                 <MudSpacer />
-                <MudIconButton OnClick="@Logout" Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" />
-               
 
+                <UserInfoButton></UserInfoButton>
+                <MudIconButton OnClick="@Logout" Icon="@Icons.Material.Filled.Logout" Color="Color.Inherit" />
+           
                 <MudDrawer @bind-Open="@_open" ClipMode="DrawerClipMode.Always" Elevation="1" Variant="@DrawerVariant.Mini">
 
                     <NavMenu></NavMenu>
                 </MudDrawer>
-
-
-
             </MudAppBar>
 
 

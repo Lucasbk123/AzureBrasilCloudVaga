@@ -6,7 +6,11 @@ namespace AzureBrasilCloudVaga.ApiService.Interfaces
 {
     public interface ITenantService
     {
-        public Task<PaginatedResponse<TenantGroupResponse>> GetPaginatedGroupsAsync(TenantGroupRequest request);
+        public Task<PaginatedResponse<GroupResponse>> GetPaginatedGroupsAsync(GroupRequest request);
+
+        public Task<PaginatedResponse<UserResponse>> GetPaginatedUsersAsync(UserRequest request);
+
+        public Task<PaginatedResponse<SigninsResponse>> GetPaginatedSigninsAsync(SignisRequest request);
 
 
     }

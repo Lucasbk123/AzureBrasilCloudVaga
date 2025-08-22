@@ -1,5 +1,6 @@
 ﻿@typeparam TItem
 @using System.Text.Json
+@using System.Net
 @inject IDialogService DialogService
 
 <MudContainer MaxWidth="MaxWidth.False">
@@ -12,9 +13,9 @@
                 <MudItem xs="4" md="2">
                     <MudSelect T="int" Value="@selectedPageSize" ValueChanged="OnPageSizeChangedInternal"
                                Label="Registros por página" Variant="Variant.Outlined" Margin="Margin.Dense">
-                        <MudSelectItem Value="1">1</MudSelectItem>
-                        <MudSelectItem Value="2">2</MudSelectItem>
-                        <MudSelectItem Value="5">5</MudSelectItem>
+                        <MudSelectItem Value="10">10</MudSelectItem>
+                        <MudSelectItem Value="25">25</MudSelectItem>
+                        <MudSelectItem Value="50">50</MudSelectItem>
                     </MudSelect>
                 </MudItem>
 
@@ -35,6 +36,18 @@
             </MudGrid>
         </MudCardContent>
     </MudCard>
+
+
+    @if (!string.IsNullOrEmpty(MessageError))
+    {
+        <MudCard Class="mx-auto my-2" Style="max-width:400px; border:1px solid #f44336;">
+            <MudCardContent>
+                <MudText Typo="Typo.h6" Color="Color.Error">Aviso</MudText>
+                <MudText>@MessageError</MudText>
+            </MudCardContent>
+        </MudCard>
+    }
+
 
     @if (IsLoading)
     {
@@ -87,14 +100,13 @@
     [Parameter] public string EmptyMessage { get; set; } = "Nenhum item encontrado.";
     [Parameter] public bool IsLoading { get; set; } = false;
     [Parameter] public PaginatedResponse<TItem>? Response { get; set; }
-
     [Parameter] public RenderFragment? ColGroup { get; set; }
     [Parameter] public RenderFragment? HeaderContent { get; set; }
     [Parameter] public RenderFragment<TItem>? RowTemplate { get; set; }
-
     [Parameter] public Func<int, int, Task<PaginatedResponse<TItem>?>>? LoadDataAsync { get; set; }
-
     [Parameter] public EventCallback<bool> IsLoadingChanged { get; set; }
+
+    private string MessageError { get; set; }
 
 
     private int selectedPageSize { get; set; } = 10;
@@ -112,14 +124,18 @@
 
             Response = await LoadDataAsync(pageNumber, pageSize);
         }
-        catch (Exception)
+        catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Forbidden && ex.Message.Contains("premium", StringComparison.OrdinalIgnoreCase))
+        {
+            MessageError = ex.Message;
+        }
+        catch (HttpRequestException ex)
         {
             var parameters = new DialogParameters
             {
                 { "OnRetry", EventCallback.Factory.Create(this,() => LoadDataInternalAsync(pageNumber,pageSize)) }
             };
 
-            await DialogService.ShowAsync<DialogError>(null,parameters);
+            await DialogService.ShowAsync<ErrorDialog>(null, parameters);
         }
         finally
         {
