@@ -35,7 +35,7 @@ public class AzureTenantService : ITenantService
         var groupsPageCache = await _fusionCache.TryGetAsync<GroupCollectionResponse>(cacheKey);
 
         if (groupsPageCache.HasValue)
-            return await CreateMapperGroups(groupsPageCache, request, groupsPageCache.Value.OdataCount 
+            return  CreateMapperGroups(groupsPageCache, request, groupsPageCache.Value.OdataCount 
                 ?? await _fusionCache.GetOrDefaultAsync<long>(odataCountCacheKey));
 
         int currentPage = 1;
@@ -64,11 +64,11 @@ public class AzureTenantService : ITenantService
                  await _graphServiceClient.Groups.WithUrl(groupsPage.OdataNextLink).GetAsync());
         }
 
-        return await CreateMapperGroups(groupsPage, request, groupsPage.OdataCount
+        return  CreateMapperGroups(groupsPage, request, groupsPage.OdataCount
                 ?? await _fusionCache.GetOrDefaultAsync<long>(odataCountCacheKey));
     }
 
-    private async Task<PaginatedResponse<TenantGroupResponse>> CreateMapperGroups(GroupCollectionResponse groupsPage, TenantGroupRequest request,long OdataCount) =>
+    private PaginatedResponse<TenantGroupResponse> CreateMapperGroups(GroupCollectionResponse groupsPage, TenantGroupRequest request,long OdataCount) =>
         new()
         {
             Items = groupsPage.Value.Select(x => new TenantGroupResponse(x.Id, x.DisplayName, x.Description, x.CreatedDateTime.Value)),

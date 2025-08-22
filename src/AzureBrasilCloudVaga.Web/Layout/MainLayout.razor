@@ -1,4 +1,6 @@
 ﻿@inherits LayoutComponentBase
+@inject NavigationManager Navigation
+@inject SignOutSessionStateManager SignOutManager 
 
 @* Required *@
 <MudThemeProvider />
@@ -15,8 +17,8 @@
                 <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@ToggleDrawer" />
                 My Application
                 <MudSpacer />
-                <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" />
-
+                <MudIconButton OnClick="@Logout" Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" />
+               
 
                 <MudDrawer @bind-Open="@_open" ClipMode="DrawerClipMode.Always" Elevation="1" Variant="@DrawerVariant.Mini">
 
@@ -46,5 +48,11 @@
     private void ToggleDrawer()
     {
         _open = !_open;
+    }
+
+    private async Task Logout()
+    {
+        await SignOutManager.SetSignOutState();
+        Navigation.NavigateTo("/authentication/logout");
     }
 }

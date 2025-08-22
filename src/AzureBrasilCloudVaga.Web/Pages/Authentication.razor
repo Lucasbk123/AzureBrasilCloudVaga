@@ -3,7 +3,7 @@
 @using Microsoft.Extensions.Logging
 @inject ILogger<Authentication> Logger
 
-<RemoteAuthenticatorView Action="@Action">
+<RemoteAuthenticatorView Action="@Action" OnLogOutSucceeded="RedirectLogin">
     <LoggingIn>
         <div class="auth-status">
             <div class="spinner"></div>
@@ -27,10 +27,7 @@
         </div>
     </LogOut>
     <LogOutSucceeded>
-        <div class="auth-status success">
-            <i class="fas fa-check-circle"></i>
-            <p>Logout realizado com sucesso!</p>
-        </div>
+        <RedirectToLogin></RedirectToLogin>
     </LogOutSucceeded>
     <LogOutFailed>
         <div class="auth-status error">
@@ -115,6 +112,8 @@
     {
         Logger.LogInformation($"Processando ação de autenticação: {Action}");
     }
+
+    private void RedirectLogin() => Navigation.NavigateToLogin("login");
 
     private void RetryLogin()
     {

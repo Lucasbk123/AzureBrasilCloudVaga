@@ -1,15 +1,14 @@
 ﻿@page "/grupos"
+@inject IHttpClientFactory HttpClientFactory
 
 <MudContainer MaxWidth="MaxWidth.False" Class="pt-4">
     <MudText Typo="Typo.h4" Class="mb-4">Grupos do Tenant</MudText>
 
-    <DataGridCustom TItem="TenantGroupViewModel"
-              Response="@response"
-              IsLoading="@isLoading"
-              SelectedPageSize="@selectedPageSize"
-              OnPageChanged="OnPageChanged"
-              OnPageSizeChanged="OnPageSizeChanged"
-              EmptyMessage="Nenhum Grupo Encontrador">
+    <DataGridCustom TItem="TenantGroupResponse"
+                    Response="@response"
+                    IsLoading="@isLoading"
+                    LoadDataAsync="LoadGrupoTenantDataAsync"
+                    EmptyMessage="Nenhum Grupo Encontrador">
 
         <HeaderContent>
             <MudTh>ID</MudTh>
@@ -29,89 +28,29 @@
             <MudTd>@item.CreatedDateTime.ToString("dd/MM/yyyy HH:mm:ss")</MudTd>
         </RowTemplate>
     </DataGridCustom>
-
 </MudContainer>
 @code {
-    bool isLoading;
+    bool isLoading = true;
 
     private int selectedPageSize = 10;
     private int selectedPageNumber = 1;
 
-    private PaginatedResponse<TenantGroupViewModel> response;
+    private PaginatedResponse<TenantGroupResponse> response;
 
 
-    private async Task OnPageChanged(int page)
+    public async Task<PaginatedResponse<TenantGroupResponse>> LoadGrupoTenantDataAsync(int pageNumber, int pageSize)
     {
+        var client = HttpClientFactory.CreateClient("ServerApi");
 
-        selectedPageNumber = page;
+        // users = await http.GetFromJsonAsync<object>("/api/tenant/users");
+        // me = await http.GetFromJsonAsync<object>("/api/me");
+        //signins = await http.GetFromJsonAsync<object>("/api/tenant/signins");
 
-        await LoadGrupoTenantDataAsync();
-
-    }
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadGrupoTenantDataAsync();
-    }
-
-    private async Task OnPageSizeChanged(int pageSize)
-    {
-        selectedPageSize = pageSize;
-        selectedPageNumber = 1;
-        await LoadGrupoTenantDataAsync();
-    }
-
-
-    async Task LoadGrupoTenantDataAsync()
-    {
-        isLoading = true;
-        // var http = HttpClientFactory.CreateClient("ServerApi");
-
-        try
+        return await client.GetFromJsonAsync<PaginatedResponse<TenantGroupResponse>>("api/tenant/groups".SetQueryParams(new PaginatedRequest
         {
-            // users = await http.GetFromJsonAsync<object>("/api/tenant/users");
-            // me = await http.GetFromJsonAsync<object>("/api/me");
-
-            // response = await http.GetFromJsonAsync<PagedResponse<Item>>("api/tenant/groups", new PaginationRequest
-            // {
-            //     PageNumber = selectedPageNumber,
-            //     PageSize = selectedPageSize
-            // });
-
-            response = new PaginatedResponse<TenantGroupViewModel>
-            {
-                Items = new List<TenantGroupViewModel>
-                {
-                    new("12345640","Lucas Pereira","Testewadasd",DateTime.Now),
-                    new("12345640","Lucas Pereira","Testewadasd",DateTime.Now),
-                    new("12345640","Lucas Pereira","Testewadasd",DateTime.Now),
-                    new("12345640","Lucas Pereira","Testewadasd",DateTime.Now),
-                    new("12345640","Lucas Pereira","Testewadasd",DateTime.Now),
-                    new("12345640","Lucas Pereira","Testewadasd",DateTime.Now),
-                       new("12345640","Lucas Pereira","Testewadasd",DateTime.Now),
-                    new("12345640","Lucas Pereira","Testewadasd",DateTime.Now),
-                    new("12345640","Lucas Pereira","Testewadasd",DateTime.Now),
-                    new("12345640","Lucas Pereira","Testewadasd",DateTime.Now),
-                    new("12345640","Lucas Pereira","Testewadasd",DateTime.Now),
-                    new("12345640","Lucas Pereira","Testewadasd",DateTime.Now)
-                },
-                TotalPages = 4,
-                PageNumber = 1,
-                TotalRecords = 40,
-                PageSize = 10
-            };
-
-
-            //signins = await http.GetFromJsonAsync<object>("/api/tenant/signins");
-        }
-        catch (Exception ex)
-        {
-
-        }
-        finally
-        {
-            isLoading = false;
-        }
-
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        }));
 
     }
 

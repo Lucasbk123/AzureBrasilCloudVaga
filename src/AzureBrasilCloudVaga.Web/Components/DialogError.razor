@@ -1,0 +1,51 @@
+﻿<MudDialog>
+    <DialogContent>
+        <div class="d-flex flex-column align-items-center p-4">
+            <MudIcon Icon="@Icons.Material.Filled.ErrorOutline" Color="Color.Error" />
+            <MudText Typo="Typo.h6" Class="mt-3">Ocorreu um erro inesperado</MudText>
+            <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2">
+                Por favor, tente novamente em alguns instantes.
+            </MudText>
+            @if(isLoading)
+            {
+                <MudProgressCircular Indeterminate="isLoading"></MudProgressCircular>
+            }
+        </div>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Loading Variant="Variant.Filled" Color="Color.Primary" OnClick="Retry">
+            <MudIcon Icon="@Icons.Material.Filled.Refresh" Class="mr-2" /> Tentar novamente
+        </MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="Close">
+            Fechar
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public EventCallback OnRetry { get; set; }
+
+
+    private bool isLoading;
+
+    private async Task Retry()
+    {
+        try
+        {
+            isLoading = true;
+            await OnRetry.InvokeAsync();
+
+        }
+        finally
+        {
+            MudDialog.Close();
+            isLoading = false;
+        }
+    }
+
+    private void Close() => MudDialog.Close();
+
+}

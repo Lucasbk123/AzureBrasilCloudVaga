@@ -23,43 +23,6 @@
                         Entrar com Microsoft
                     </button>
                 </div>
-
-
-                <RemoteAuthenticatorView Action="@Action">
-                    <LoggingIn>
-                        <div class="auth-status">
-                            <div class="spinner"></div>
-                            <p>Realizando login com Microsoft...</p>
-                        </div>
-                    </LoggingIn>
-                    <LogOut>
-                        <div class="auth-status">
-                            <div class="spinner"></div>
-                            <p>Realizando logout...</p>
-                        </div>
-                    </LogOut>
-                    <LogOutSucceeded>
-                        <div class="auth-status success">
-                            <i class="fas fa-check-circle"></i>
-                            <p>Logout realizado com sucesso!</p>
-                        </div>
-                    </LogOutSucceeded>
-                    <LogOutFailed>
-                        <div class="auth-status error">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <h3>Erro no Logout</h3>
-                            <p>Não foi possível realizar o logout completamente.</p>
-                        </div>
-                    </LogOutFailed>
-                </RemoteAuthenticatorView>
-
-
-                <div class="alternative-actions">
-                    <p>Não tem uma conta Microsoft?</p>
-                    <a href="https://signup.live.com" target="_blank" class="link">
-                        Criar conta Microsoft
-                    </a>
-                </div>
             </div>
         </div>
     </div>
@@ -247,16 +210,10 @@
 
     public string? Action { get; set; }
 
-    private async Task LoginWithMicrosoft()
+    private void LoginWithMicrosoft()
     {
-        Action = "Login";
+        Navigation.NavigateTo("authentication/login");
 
-
-    }
-
-    private async Task Logout()
-    {
-        Action = "Login";
     }
 
     private void NavigateToHome()
