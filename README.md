@@ -33,6 +33,16 @@ A solução foi construída com **.NET 9**, **Blazor WebAssembly** no frontend, 
 - [Docker Compose](https://docs.docker.com/compose/install/)
 -  Conta no Azure com acesso ao Entra ID
 
+⚠️ **Observação Importante sobre Permissões e Redirect URI**  
+- No **App Registration**, configure a **Redirect URI** para o Blazor WebAssembly, por exemplo:  
+  `https://localhost:8080/authentication/login-callback`  
+- Configure as permissões necessárias para acessar informações adicionais do **Tenant** via **Microsoft Graph API**, como:  
+  - `User.Read.All` (delegada – para leitura de todos os usuários do Tenant)  
+  - `Group.Read.All` (delegada – para leitura de todos os grupos do Tenant)  
+  - `AuditLog.Read.All` (opcional – para consultar tentativas de login)  
+  - `User.Read` (delegada – obrigatória para login e perfil básico) 
+- Após configurar, **conceda o consentimento de administrador** (Admin Consent).
+
 ### 🧾 1. Clone o repositório 
 
 Abra o terminal e execute:
