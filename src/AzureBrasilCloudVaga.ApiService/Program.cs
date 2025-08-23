@@ -17,7 +17,7 @@ builder.Services.AddProblemDetails();
 builder.Services.AddFusionCache()
 .WithDefaultEntryOptions(new FusionCacheEntryOptions
 {
-    Duration = TimeSpan.FromMinutes(60),
+    Duration = TimeSpan.FromMinutes(5),
     SkipMemoryCacheRead = true,
     SkipMemoryCacheWrite = true
 
