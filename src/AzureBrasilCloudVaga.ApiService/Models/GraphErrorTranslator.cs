@@ -5,7 +5,7 @@
 
         private static readonly Dictionary<string, string> _translations = new()
         {
-            { "Authorization_RequestDenied", "Você não tem permissão para realizar esta ação. Caso precise de acesso, entre em contato com o administrador do sistema." },
+            { "Authorization_RequestDenied", "Não foi possível completar esta ação porque sua conta não possui permissão no Microsoft Azure.entre em contato com o administrador da sua organização." },
             { "Authentication_RequestFromNonPremiumTenantOrB2CTenant", "Seu tenant não possui licença Premium para acessar este recurso.Entre em contato com o suporte." }
         };
 
