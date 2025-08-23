@@ -17,4 +17,4 @@ jq --arg authority "$AZURE_AUTHORITY" \
     | .Api.Scopes = $scopes' \
    "$JSON_FILE" > "${JSON_FILE}.tmp" && mv "${JSON_FILE}.tmp" "$JSON_FILE"
 
-echo "appsettings.json atualizado com sucesso!"
+echo "appsettings.json atualizado com sucesso"
