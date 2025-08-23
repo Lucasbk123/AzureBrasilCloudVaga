@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using AzureBrasilCloudVaga.ApiService.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Graph.Models;
+using Microsoft.Graph.Models.ODataErrors;
 using Microsoft.Graph.Models.TermStore;
 using System.ComponentModel;
 using System.Net;
@@ -34,23 +36,26 @@ public class ExceptionHandlingMiddleware
     {
         context.Response.ContentType = "application/json";
 
-        if (ex.Message.Contains("premium license", StringComparison.OrdinalIgnoreCase))
+        if (ex is ODataError odataError)
         {
-            context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+            context.Response.StatusCode = odataError.ResponseStatusCode;
             var result = JsonSerializer.Serialize(new
             {
-                error = "Licença Premium necessária",
-                message = "Seu tenant não possui licença Premium para acessar este recurso.Entre em contato com o suporte."
+                ErrorCode = odataError.Error?.Code ?? "InternalServerError",
+                Message = GraphErrorTranslator.GetMessage(odataError.Error?.Code, odataError.Error?.Message),
+                IsThirdPartyIntegrationError = true
             });
             await context.Response.WriteAsync(result);
             return;
+
         }
 
         context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
         var generic = JsonSerializer.Serialize(new
         {
-            error = "Erro inesperado",
-            message = ex.Message
+            errorCode = "InternalServerError",
+            message = ex.Message,
+            IsThirdPartyIntegrationError = false
         });
         await context.Response.WriteAsync(generic);
     }

@@ -124,7 +124,7 @@
 
             Response = await LoadDataAsync(pageNumber, pageSize);
         }
-        catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Forbidden && ex.Message.Contains("premium", StringComparison.OrdinalIgnoreCase))
+        catch (GraphApiException ex)
         {
             MessageError = ex.Message;
         }

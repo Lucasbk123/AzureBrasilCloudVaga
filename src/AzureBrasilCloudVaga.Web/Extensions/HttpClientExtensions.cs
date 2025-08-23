@@ -15,7 +15,8 @@ public static class HttpClientExtensions
         if (!response.IsSuccessStatusCode)
         {
             var content = JsonSerializer.Deserialize<ApiError>(await response.Content.ReadAsStringAsync(), jsonSerializerOptions);
-            throw new HttpRequestException(
+
+            throw content.IsThirdPartyIntegrationError ? new GraphApiException(content.ErrorCode, content.Message) : new HttpRequestException(
                  content.Message,
                  null,
                  response.StatusCode
@@ -26,4 +27,14 @@ public static class HttpClientExtensions
     }
 }
 
-public record ApiError(string Message,string Error);
+public record ApiError(string Message, string ErrorCode, bool IsThirdPartyIntegrationError);
+
+public class GraphApiException : Exception
+{
+    public string ErrorCode { get; }
+    public GraphApiException(string errorCode, string? message = null, Exception? innerException = null)
+        : base(message ?? "Ocorreu um erro ao acessar o Microsoft Graph.", innerException)
+    {
+        ErrorCode = errorCode;
+    }
+}
