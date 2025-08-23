@@ -11,7 +11,7 @@ services:
     expose:
       - "6379"
     networks:
-      - "aspire"
+      - "AzureBrasilCloud"
   apiservice:
     build:
       context: ../
@@ -33,7 +33,7 @@ services:
       cache:
         condition: "service_started"
     networks:
-      - "aspire"
+      - "AzureBrasilCloud"
   webfrontend:
     build:
       context: ../src/AzureBrasilCloudVaga.Web
@@ -50,7 +50,7 @@ services:
       apiservice:
         condition: "service_started"
     networks:
-      - "aspire"
+      - "AzureBrasilCloud"
 networks:
-  aspire:
+  AzureBrasilCloud:
     driver: "bridge"
