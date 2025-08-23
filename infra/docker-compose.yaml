@@ -1,0 +1,56 @@
+services:
+  cache:
+    image: "docker.io/library/redis:7.4"
+    command:
+      - "-c"
+      - "redis-server --requirepass $$REDIS_PASSWORD"
+    entrypoint:
+      - "/bin/sh"
+    environment:
+      REDIS_PASSWORD: "${CACHE_PASSWORD}"
+    expose:
+      - "6379"
+    networks:
+      - "aspire"
+  apiservice:
+    build:
+      context: ../
+      dockerfile: src/AzureBrasilCloudVaga.ApiService/Dockerfile
+    environment:
+      HTTP_PORTS: "${APISERVICE_PORT}"
+      ConnectionStrings__cache: "cache:6379,password=${CACHE_PASSWORD}"
+      AzureAd__Instance: "https://login.microsoftonline.com/"
+      AzureAd__Domain: "Domain"
+      AzureAd__TenantId: "TenantId"
+      AzureAd__ClientId: "ClientId"
+      AzureAd__ClientSecret: "ClientSecret"
+      AzureAd__Audience: "api://ClientId"
+    ports:
+      - "5010:8080"
+    expose:
+      - "${APISERVICE_PORT}"
+    depends_on:
+      cache:
+        condition: "service_started"
+    networks:
+      - "aspire"
+  webfrontend:
+    build:
+      context: ../src/AzureBrasilCloudVaga.Web
+      dockerfile: dockerfile
+    environment:
+      HTTP_PORTS: "80"
+      AZURE_AUTHORITY: "https://login.microsoftonline.com/tenantId"
+      CLIENT_ID: "CLIENT_ID"
+      API_BASEURL: "http://localhost:5010"
+      NEW_SCOPE: "api://CLIENT_ID/User.Read"
+    ports:
+      - "8080:80"
+    depends_on:
+      apiservice:
+        condition: "service_started"
+    networks:
+      - "aspire"
+networks:
+  aspire:
+    driver: "bridge"

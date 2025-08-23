@@ -12,6 +12,8 @@ builder.AddProject<Projects.AzureBrasilCloudVaga_Web>("webfrontend")
     .WithExternalHttpEndpoints()
     .WithHttpHealthCheck("/health")
     .WithReference(apiService)
-    .WaitFor(apiService);
+    .WaitFor(apiService).PublishAsDockerFile();
+
+builder.AddDockerComposeEnvironment("compose");
 
 builder.Build().Run();
