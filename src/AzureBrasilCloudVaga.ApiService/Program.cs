@@ -61,7 +61,7 @@ app.MapGet("/api/tenant/groups", async (
     [AsParameters] GroupRequest request,
     [FromServices] ITenantService tenantService) =>
 {
-    return await tenantService.GetPaginatedGroupsAsync(request);
+    return Results.Ok(await tenantService.GetPaginatedGroupsAsync(request));
 })
 .WithOpenApi()
 .WithName("groups")
@@ -84,7 +84,7 @@ app.MapGet("/api/tenant/users", async (
     [AsParameters] UserRequest request,
     [FromServices] ITenantService tenantService) =>
 {
-    return await tenantService.GetPaginatedUsersAsync(request);
+    return Results.Ok(await tenantService.GetPaginatedUsersAsync(request));
 })
 .WithOpenApi()
 .WithName("users")
